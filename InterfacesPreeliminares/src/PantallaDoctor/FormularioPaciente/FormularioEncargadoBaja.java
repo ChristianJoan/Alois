@@ -6,6 +6,12 @@
 package PantallaDoctor.FormularioPaciente;
 
 import PantallaDoctor.*;
+import Conector.ConexionDB;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,7 +22,14 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
     /**
      * Creates new form PantallaPrincipal
      */
+    String campo;
+    String dato;
+    String SQL;
+    ResultSet rs;
+    ConexionDB conector;
+
     public FormularioEncargadoBaja() {
+        conector = new ConexionDB();
         initComponents();
     }
 
@@ -42,8 +55,8 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
+        jTableBajas = new javax.swing.JTable();
+        jButtonEliminar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setExtendedState(MAXIMIZED_BOTH);
@@ -109,9 +122,9 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
             }
         });
 
-        jComboBox_Busqueda.setEditable(true);
         jComboBox_Busqueda.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
-        jComboBox_Busqueda.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Nombre" }));
+        jComboBox_Busqueda.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "RFC", "Nombre" }));
+        jComboBox_Busqueda.setToolTipText("");
         jComboBox_Busqueda.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox_BusquedaItemStateChanged(evt);
@@ -123,6 +136,11 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/buscarPequeño.png"))); // NOI18N
         jButton2.setText("Buscar");
         jButton2.setBorder(null);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setBackground(new java.awt.Color(153, 0, 153));
         jLabel2.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
@@ -162,20 +180,25 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(151, 99, 207));
 
-        jTable1.setFont(new java.awt.Font("Gill Sans MT", 0, 14)); // NOI18N
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jTableBajas.setFont(new java.awt.Font("Gill Sans MT", 0, 14)); // NOI18N
+        jTableBajas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Nombre", "Apellido Paterno", "Apellido Materno", "Telefono", "Fraccionamiento"
+                "ID", "Nombre", "Apellido Paterno", "Apellido Materno", "Calle", "Num_int"
             }
         ));
-        jTable1.setCellSelectionEnabled(true);
-        jScrollPane1.setViewportView(jTable1);
+        jTableBajas.setCellSelectionEnabled(true);
+        jScrollPane1.setViewportView(jTableBajas);
 
-        jButton1.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
-        jButton1.setText("Eliminar");
+        jButtonEliminar.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
+        jButtonEliminar.setText("Eliminar");
+        jButtonEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEliminarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -188,7 +211,7 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 794, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(432, 432, 432)
-                        .addComponent(jButton1)))
+                        .addComponent(jButtonEliminar)))
                 .addContainerGap(142, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -197,7 +220,7 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
                 .addGap(28, 28, 28)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addComponent(jButtonEliminar)
                 .addContainerGap())
         );
 
@@ -229,14 +252,17 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
         // TODO add your handling code here:
         String Caracteres = this.jTextField_Bus.getText();
         char caracter = evt.getKeyChar();
-        if (this.jComboBox_Busqueda.getSelectedItem().toString() == "ID") {
-            if (((caracter < '0') || (caracter > '9')) && (caracter != '\b')) {
+        if (this.jComboBox_Busqueda.getSelectedItem().toString() == "RFC") {
+            if (((caracter < '0') || (caracter > '9')) && (caracter != '\b') && ((((caracter < 'A') || (caracter > 'Z')) && ((caracter < 'a') || (caracter > 'z'))))) {
                 evt.consume(); // ignorar el evento de teclado
             }
             if (Caracteres.length() >= 13) {
                 evt.consume();
             }
-        } else if (this.jComboBox_Busqueda.getSelectedItem().toString() == "Nombre"){
+        } else if (this.jComboBox_Busqueda.getSelectedItem().toString() == "Nombre") {
+            if ((((caracter < 'A') || (caracter > 'Z')) && ((caracter < 'a') || (caracter > 'z'))) && (caracter != ' ') && (caracter != 'ñ') && (caracter != 'Ñ')) {
+                evt.consume(); // ignorar el evento de teclado
+            }
             if (Caracteres.length() >= 25) {
                 evt.consume();
             }
@@ -248,6 +274,47 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
         // TODO add your handling code here:
         this.jTextField_Bus.setText("");
     }//GEN-LAST:event_jComboBox_BusquedaItemStateChanged
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel) this.jTableBajas.getModel();
+        Object[] fila = new Object[11];
+        campo = this.jComboBox_Busqueda.getSelectedItem().toString();
+        dato = this.jTextField_Bus.getText();
+        SQL = "SELECT * FROM Encargado WHERE " + campo.toLowerCase() + "=" + "'" + dato + "'";
+        rs = conector.consultas(SQL);
+
+        try {
+            while (rs.next()) {
+                fila[0] = rs.getString("rfc");
+                fila[1] = rs.getString("nombre");
+                fila[2] = rs.getString("ap_paterno");
+                fila[3] = rs.getString("ap_materno");
+                fila[4] = rs.getString("calle");
+                fila[5] = rs.getString("num_int");
+                fila[6] = rs.getString("num_Ext");
+                fila[7] = rs.getString("fracc");
+                fila[8] = rs.getString("cp");
+                fila[9] = rs.getString("correo");
+                fila[10]=rs.getString("Telefono");  
+                model.addRow(fila);
+                this.jTableBajas.setModel(model);
+            }
+        } catch (SQLException ex) {
+
+            System.out.println("Error: "+ex.getMessage());
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButtonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEliminarActionPerformed
+        // TODO add your handling code here:
+        int fila=this.jTableBajas.getSelectedRow();
+        DefaultTableModel model=(DefaultTableModel)this.jTableBajas.getModel();
+        SQL="DELETE FROM ENCARGADO WHERE RFC="+"'"+model.getValueAt(fila,0).toString()+"'";
+        conector.baja(SQL);
+        
+        
+    }//GEN-LAST:event_jButtonEliminarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -402,6 +469,134 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -412,8 +607,8 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButtonEliminar;
     private javax.swing.JComboBox<String> jComboBox_Busqueda;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -425,7 +620,7 @@ public class FormularioEncargadoBaja extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTableBajas;
     private javax.swing.JTextField jTextField_Bus;
     // End of variables declaration//GEN-END:variables
 }

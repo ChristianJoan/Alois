@@ -5,7 +5,11 @@
  */
 package PantallaDoctor.FormularioPaciente;
 
+import Conector.ConexionDB;
 import PantallaDoctor.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,7 +20,13 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
     /**
      * Creates new form PantallaPrincipal
      */
+    String campo;
+    String dato;
+    ResultSet rs;
+    String SQL;
+    ConexionDB conector;
     public FormularioEncargadosConsultas() {
+        conector=new ConexionDB();
         initComponents();
     }
 
@@ -42,7 +52,7 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        jTableConsulta = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setExtendedState(MAXIMIZED_BOTH);
@@ -107,12 +117,16 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
             }
         });
 
-        jComboBox_Busqueda.setEditable(true);
         jComboBox_Busqueda.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
-        jComboBox_Busqueda.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ID", "Nombre" }));
+        jComboBox_Busqueda.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "RFC", "Nombre" }));
         jComboBox_Busqueda.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBox_BusquedaItemStateChanged(evt);
+            }
+        });
+        jComboBox_Busqueda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox_BusquedaActionPerformed(evt);
             }
         });
 
@@ -121,6 +135,11 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/buscarPequeño.png"))); // NOI18N
         jButton2.setText("Buscar");
         jButton2.setBorder(null);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setBackground(new java.awt.Color(153, 0, 153));
         jLabel2.setFont(new java.awt.Font("Gill Sans MT", 0, 18)); // NOI18N
@@ -160,8 +179,8 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(151, 99, 207));
 
-        jTable1.setFont(new java.awt.Font("Gill Sans MT", 0, 14)); // NOI18N
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jTableConsulta.setFont(new java.awt.Font("Gill Sans MT", 0, 14)); // NOI18N
+        jTableConsulta.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null, null, null, null}
             },
@@ -169,8 +188,8 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
                 "RFC", "Nombre Completo", "Telefono", "Fraccionamiento", "Calle", "Num Interior", "Num Exterior", "Codigo Postal", "Correo"
             }
         ));
-        jTable1.setCellSelectionEnabled(true);
-        jScrollPane1.setViewportView(jTable1);
+        jTableConsulta.setCellSelectionEnabled(true);
+        jScrollPane1.setViewportView(jTableConsulta);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -236,6 +255,41 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
         // TODO add your handling code here:
         this.jTextField_Bus.setText("");
     }//GEN-LAST:event_jComboBox_BusquedaItemStateChanged
+
+    private void jComboBox_BusquedaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox_BusquedaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboBox_BusquedaActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel) this.jTableConsulta.getModel();
+        Object[] fila = new Object[11];
+        campo = this.jComboBox_Busqueda.getSelectedItem().toString();
+        dato = this.jTextField_Bus.getText();
+        SQL = "SELECT * FROM Encargado WHERE " + campo.toLowerCase() + "=" + "'" + dato + "'";
+        rs = conector.consultas(SQL);
+
+        try {
+            while (rs.next()) {
+                fila[0] = rs.getString("rfc");
+                fila[1] = rs.getString("nombre");
+                fila[2] = rs.getString("ap_paterno");
+                fila[3] = rs.getString("ap_materno");
+                fila[4] = rs.getString("calle");
+                fila[5] = rs.getString("num_int");
+                fila[6] = rs.getString("num_Ext");
+                fila[7] = rs.getString("fracc");
+                fila[8] = rs.getString("cp");
+                fila[9] = rs.getString("correo");
+                fila[10]=rs.getString("Telefono");  
+                model.addRow(fila);
+                this.jTableConsulta.setModel(model);
+            }
+        } catch (SQLException ex) {
+
+            System.out.println("Error: "+ex.getMessage());
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -518,6 +572,262 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -540,7 +850,7 @@ public class FormularioEncargadosConsultas extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTableConsulta;
     private javax.swing.JTextField jTextField_Bus;
     // End of variables declaration//GEN-END:variables
 }
